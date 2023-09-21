@@ -48,6 +48,7 @@ describe("setup hijacks vim.uri_from_bufnr", function ()
     local old = vim.uri_from_bufnr
     ssher.setup()
     assert.equal(old(buf), vim.uri_from_bufnr(buf))
+    vim.uri_from_bufnr = old
   end)
   it("doesn't change file URI", function ()
     local buf = vim.api.nvim_create_buf(false, true)
@@ -55,5 +56,15 @@ describe("setup hijacks vim.uri_from_bufnr", function ()
     local old = vim.uri_from_bufnr
     ssher.setup()
     assert.equal(old(buf), vim.uri_from_bufnr(buf))
+    vim.uri_from_bufnr = old
   end)
+  it("translates prefixes", function ()
+    local buf = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_buf_set_name(buf, "scp://google.com:123/abc/def")
+    local old = vim.uri_from_bufnr
+    ssher.setup({translations = {["scp://google.com:123/abc"] = "/path/to/abc"}})
+    assert.equal("/path/to/abc/def", vim.uri_from_bufnr(buf))
+    vim.uri_from_bufnr = old
+  end)
+  
 end)
